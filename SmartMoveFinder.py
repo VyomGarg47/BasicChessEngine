@@ -1,0 +1,255 @@
+import random
+
+pieceScore = {"K": 0,
+			  "Q": 15, 
+			  "R": 7,
+			  "B": 3,
+			  "N": 3,
+			  "p": 1}
+
+KnightScore = [[1, 1, 1, 1, 1, 1, 1, 1],
+			   [1, 2, 2, 2, 2, 2, 2, 1],
+			   [1, 2, 3, 3, 3, 3, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 2, 3, 3, 3, 3, 2, 1],
+			   [1, 2, 2, 2, 2, 2, 2, 1],
+			   [1, 1, 1, 1, 1, 1, 1, 1]]
+
+bishopScores =[[4, 3, 2, 1, 1, 2, 3, 4],
+			   [3, 4, 3, 2, 2, 3, 4, 3],
+			   [2, 3, 4, 3, 3, 4, 3, 2],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [2, 3, 4, 3, 3, 4, 3, 2],
+			   [3, 4, 3, 2, 2, 3, 4, 3],
+			   [4, 3, 2, 1, 1, 2, 3, 4]]
+
+QueenScores = [[1, 1, 1, 3, 1, 1, 1, 1],
+			   [1, 4, 3, 3, 3, 3, 1, 1],
+			   [1, 3, 4, 4, 3, 4, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 4, 3, 4, 3, 4, 2, 1],
+			   [1, 1, 3, 2, 2, 3, 1, 1],
+			   [1, 1, 1, 3, 1, 1, 1, 1]]
+
+rookScores =  [[4, 3, 4, 5, 4, 5, 3, 4],
+			   [4, 4, 4, 4, 4, 4, 4, 4],
+			   [1, 1, 4, 4, 3, 4, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 2, 3, 4, 4, 3, 2, 1],
+			   [1, 2, 3, 4, 3, 4, 2, 1],
+			   [4, 4, 4, 4, 4, 4, 4, 4],
+			   [4, 3, 4, 5, 4, 5, 4, 4]]
+
+whitePawnScores=[[9, 9, 9, 9, 9, 9, 9, 9],
+			    [8, 8, 8, 8, 8, 8, 8, 8],
+			    [5, 6, 6, 7, 7, 6, 6, 5],
+			    [2, 3, 3, 4, 4, 3, 2, 1],
+			    [1, 2, 3, 3, 3, 3, 2, 1],
+			    [1, 2, 3, 2, 2, 3, 2, 1],
+			    [1, 1, 1, 0, 0, 1, 1, 1],
+			    [0, 0, 0, 0, 0, 0, 0, 0]]
+
+blackPawnScores=[[0, 0, 0, 0, 0, 0, 0, 0],
+			    [1, 1, 1, 0, 0, 1, 1, 1],
+			    [1, 2, 3, 2, 2, 3, 2, 1],
+			    [1, 2, 3, 3, 3, 3, 2, 1],
+			    [2, 3, 3, 4, 4, 3, 2, 1],
+			    [5, 6, 6, 7, 7, 6, 6, 5],
+			    [8, 8, 8, 8, 8, 8, 8, 8],
+			    [9, 9, 9, 9, 9, 9, 9, 9]]
+
+kingScores=  [[1, 4, 5, 2, 1, 4, 5, 1],
+			  [1, 2, 2, 1, 1, 2, 2, 1],
+			  [1, 2, 1, 1, 1, 1, 2, 1],
+			  [1, 2, 1, 0, 0, 1, 2, 1],
+			  [1, 2, 1, 0, 0, 1, 2, 1],
+			  [1, 2, 1, 1, 1, 1, 2, 1],
+			  [1, 2, 1, 1, 1, 1, 2, 1],
+			  [1, 4, 5, 2, 1, 4, 5, 1]]
+
+piecePositionScores = {"N":KnightScore,
+					   "B":bishopScores,
+					   "Q":QueenScores,
+					   "bp":blackPawnScores,
+					   "wp":whitePawnScores,
+					   "K":kingScores,
+					   "R":rookScores}
+
+CHECKMATE = 1000
+STALEMATE = 0
+DEPTH = 3
+
+def findRandomMove(validMoves):
+	return validMoves[random.randint(0,len(validMoves)-1)]
+
+
+def findBestMove(gs,validMoves):
+	turnMultiplier = 1 if gs.whitetoMove else -1
+	opponentMinMaxScore = CHECKMATE #worst score for black, for max algo, start with lowest
+	bestPlayerMove = None
+	random.shuffle(validMoves)
+	for playerMove in validMoves:
+		gs.makeMove(playerMove)
+		opponentsMoves = gs.getValidMoves()
+		if gs.staleMate:
+			opponentMaxScore = STALEMATE
+		elif gs.checkMate:
+			opponentMaxScore = -CHECKMATE
+		else:
+			opponentMaxScore = -CHECKMATE
+			for opponentsMove in opponentsMoves:
+				gs.makeMove(opponentsMove)
+				gs.getValidMoves()
+				if gs.checkMate:
+					score = CHECKMATE
+				elif gs.staleMate:
+					score = STALEMATE
+				else:
+					score = -turnMultiplier*scoreMaterial(gs.board)
+				if score > opponentMaxScore:
+					opponentMaxScore = score
+				gs.undoMove()
+		if opponentMaxScore < opponentMinMaxScore:
+			opponentMinMaxScore = opponentMaxScore
+			bestPlayerMove = playerMove
+		gs.undoMove()
+	
+	return bestPlayerMove
+
+'''
+Score the board based on material
+'''
+#Helper method to make first recursive call
+def findBestMove(gs,validMoves):
+	global nextMove
+	nextMove = None
+	random.shuffle(validMoves)
+	findMoveNegaMaxAlphaBeta(gs,validMoves,DEPTH,-CHECKMATE, CHECKMATE, 1 if gs.whitetoMove else -1)
+	
+	return nextMove
+
+
+def findMoveMinMax(gs,validMoves,depth,whitetoMove):
+	global nextMove
+	if depth == 0:
+		return scoreMaterial(gs.board)
+	
+	if depth == DEPTH:
+		random.shuffle(validMoves)
+	
+	if whitetoMove:
+		maxScore = -CHECKMATE #worst score possible
+		for move in validMoves:
+			gs.makeMove(move)
+			nextMoves = gs.getValidMoves()
+			score = findMoveMinMax(gs,nextMoves,depth-1,False)
+			if score > maxScore:
+				maxScore = score
+				if depth == DEPTH:
+					nextMove = move
+
+			gs.undoMove()
+		return maxScore
+
+	else:
+		minScore = CHECKMATE #worst score possible
+		for move in validMoves:
+			gs.makeMove(move)
+			nextMoves = gs.getValidMoves()
+			score = findMoveMinMax(gs,nextMoves,depth-1,True)
+			if score < minScore:
+				minScore = score
+				if depth == DEPTH:
+					nextMove = move
+
+			gs.undoMove()
+		return minScore
+
+def findMoveNegaMax(gs,validMoves,depth,turnMultiplier):
+	global nextMove
+	if depth == 0:
+		return turnMultiplier * scoreBoard(gs)
+
+	maxScore = -CHECKMATE
+	for move in validMoves:
+		gs.makeMove(move)
+		nextMoves = gs.getValidMoves()
+		score = -findMoveNegaMax(gs,nextMoves,depth-1, -turnMultiplier)
+		if score > maxScore:
+			maxScore = score
+			if depth == DEPTH:
+				nextMove = move
+		gs.undoMove()
+	
+	return maxScore
+
+def findMoveNegaMaxAlphaBeta(gs,validMoves,depth,alpha,beta,turnMultiplier):
+	global nextMove
+	if depth == 0:
+		return turnMultiplier * scoreBoard(gs)
+
+	#move ordering - Evaluate best moves first, then the worst branches
+	#Could Evaluate check and captures first
+
+	maxScore = -CHECKMATE
+	
+	for move in validMoves:
+		gs.makeMove(move)
+		nextMoves = gs.getValidMoves()
+		score = -findMoveNegaMaxAlphaBeta(gs,nextMoves,depth-1,-beta,-alpha,-turnMultiplier)
+		if score > maxScore:
+			maxScore = score
+			if depth == DEPTH:
+				nextMove = move
+		gs.undoMove()
+		if maxScore > alpha: #pruning
+			alpha = maxScore
+		if alpha >= beta:
+			break
+	return maxScore
+
+'''
+Positive score is good for white, a negative score is good for black
+'''
+def scoreBoard(gs):
+	if gs.checkMate:
+		if gs.whitetoMove:
+			return -CHECKMATE #Black wins
+		else:
+			return CHECKMATE #White wins
+	elif gs.staleMate:
+		return STALEMATE
+	
+	score = 0 
+	for row in range(len(gs.board)):
+		for col in range(len(gs.board[row])):
+			square = gs.board[row][col]
+			if square != "--":
+				#score it positionally
+				piecePositionScore = 0
+				if square[1] =="p":
+					piecePositionScore = piecePositionScores[square][row][col]
+				else:
+					piecePositionScore = piecePositionScores[square[1]][row][col]
+
+				if square[0] == 'w':
+					score += pieceScore[square[1]] + piecePositionScore*.1
+				elif square[0] == 'b':
+					score -= (pieceScore[square[1]] + piecePositionScore*.1)
+
+	return score
+
+
+def scoreMaterial(board):
+	score = 0 
+	for row in board:
+		for square in row:
+			if square[0] == 'w':
+				score += pieceScore[square[1]]
+			elif square[0] == 'b':
+				score -= pieceScore[square[1]]
+
+	return score
