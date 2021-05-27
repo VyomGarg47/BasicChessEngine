@@ -1,4 +1,4 @@
-# BasicChessEngine
+# ChessEngine
 
 Requirements:  
-  pygame
+   pygame
